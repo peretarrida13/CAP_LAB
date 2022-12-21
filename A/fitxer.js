@@ -44,6 +44,9 @@ function exemple_senzill() {
     }
 }
 
+function Main(){
+    exemple_senzill();
+    console.log('prova');
+}
 
-exemple_senzill();
-console.log('prova');
+Main();
