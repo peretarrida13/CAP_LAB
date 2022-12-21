@@ -1,0 +1,316 @@
+Baseline
+LoopBenchmark.addLoop    avgt   10  4364.629 ± 278.302  ns/op
+LoopBenchmark.emptyLoop  avgt   10  1844.831 ± 222.863  ns/op
+
+Replace double constants with integers
+LoopBenchmark.addLoop    avgt   10  4117.234 ± 91.433  ns/op
+LoopBenchmark.emptyLoop  avgt   10  2052.714 ± 50.658  ns/op
+
+Remove bitfield testing from code path. This is getting annoying.
+LoopBenchmark.addLoop    avgt   10  4318.298 ± 175.068  ns/op
+LoopBenchmark.emptyLoop  avgt   10  2143.415 ±  25.361  ns/op
+
+Do the above in the appropriate place.
+LoopBenchmark.addLoop    avgt   10  4035.794 ± 64.773  ns/op
+LoopBenchmark.emptyLoop  avgt   10  2017.170 ± 20.154  ns/op
+
+Optimize increment code for Integer type.
+LoopBenchmark.addLoop    avgt   10  3965.677 ±  66.273  ns/op
+LoopBenchmark.emptyLoop  avgt   10  1844.240 ± 149.172  ns/op
+
+V8 benchmarks after:
+V8Benchmark.boyer          avgt    5  80743.273 ± 2028.008  us/op
+V8Benchmark.cryptoDecrypt  avgt    5  96486.072 ± 2155.507  us/op
+V8Benchmark.cryptoEncrpyt  avgt    5   6343.064 ±  226.205  us/op
+V8Benchmark.deltaBlue      avgt    5   6167.444 ±   95.659  us/op
+V8Benchmark.earley         avgt    5  19777.572 ±  148.735  us/op
+V8Benchmark.rayTrace       avgt    5  52281.841 ± 3118.398  us/op
+V8Benchmark.richards       avgt    5   2765.803 ±   36.709  us/op
+V8Benchmark.splay          avgt    5   2295.080 ±  737.135  us/op
+
+before:
+V8Benchmark.boyer          avgt    5   89328.343 ± 10179.986  us/op
+V8Benchmark.cryptoDecrypt  avgt    5  102963.568 ±  9143.967  us/op
+V8Benchmark.cryptoEncrpyt  avgt    5    6378.588 ±   176.075  us/op
+V8Benchmark.deltaBlue      avgt    5    6507.355 ±   559.816  us/op
+V8Benchmark.earley         avgt    5   19534.038 ±  1482.448  us/op
+V8Benchmark.rayTrace       avgt    5   53349.971 ±  2167.193  us/op
+V8Benchmark.richards       avgt    5    2840.020 ±    36.707  us/op
+V8Benchmark.splay          avgt    5    2206.247 ±   101.315  us/op
+
+
+*** Experiment 2: More interesting property access
+
+Baseline from master:
+PropertyBenchmark.propAccess  avgt   10  85658.794 ± 986.750  ns/op
+
+Use fast slots but not with Indy:
+A bit worse -- left it out.
+
+Use indy, but return a constant call site to the fast index:
+PropertyBenchmark.propAccess  avgt   10  88687.111 ± 5798.883  ns/op
+
+Use indy by checking only on the first operation and putting in a 
+permanent guard after that.
+PropertyBenchmark.propAccess  avgt   10  68776.374 ± 961.619  ns/op
+
+(27% faster)
+
+Use it only for properties with constant names, and make the property
+name be statically included in the CallSite
+PropertyBenchmark.propAccess  avgt   10  63712.994 ± 810.357  ns/op
+
+Use one method for all the testing rather than a guarded invocation
+PropertyBenchmark.propAccess  avgt   10  61644.419 ± 1715.340  ns/op
+
+
+
+
+
+*** Baseline: Benchmarks on work desktop
+
+JDK 11.0
+
+Master as of 6/25:
+V8Benchmark.boyer          avgt   25   97647.859 ± 800.955  us/op
+V8Benchmark.cryptoDecrypt  avgt   25  137160.788 ± 686.026  us/op
+V8Benchmark.cryptoEncrpyt  avgt   25    7479.749 ±  80.341  us/op
+V8Benchmark.deltaBlue      avgt   25    7549.867 ±  91.978  us/op
+V8Benchmark.earley         avgt   25   24956.047 ± 189.259  us/op
+V8Benchmark.rayTrace       avgt   25   64303.675 ± 363.024  us/op
+V8Benchmark.richards       avgt   25    3650.380 ±  52.534  us/op
+V8Benchmark.splay          avgt   25    2491.336 ±  91.544  us/op
+
+V8Benchmark.richards       avgt   25    3650.380 ±  52.534  us/op
+
+After first round of INDY optimizations
+V8Benchmark.boyer          avgt   25   90148.006 ± 2009.392  us/op
+V8Benchmark.cryptoDecrypt  avgt   25  133729.010 ± 1006.577  us/op
+V8Benchmark.cryptoEncrpyt  avgt   25    7436.433 ±   70.832  us/op
+V8Benchmark.deltaBlue      avgt   25    7535.570 ±   58.683  us/op
+V8Benchmark.earley         avgt   25   25681.391 ±  300.075  us/op
+V8Benchmark.rayTrace       avgt   25   61621.081 ±  297.029  us/op
+V8Benchmark.richards       avgt   25    3055.592 ±   25.371  us/op
+V8Benchmark.splay          avgt   25    3207.038 ±  134.963  us/op
+
+****
+
+February, 2021:
+
+$ java -version
+java version "1.8.0_221"
+Java(TM) SE Runtime Environment (build 1.8.0_221-b11)
+Java HotSpot(TM) 64-Bit Server VM (build 25.221-b11, mixed mode)
+
+*** New baseline on new Mac:
+V8Benchmark.boyer          avgt   10   92722.562 ± 8711.302  us/op
+V8Benchmark.cryptoDecrypt  avgt   10  121917.455 ± 7677.847  us/op
+V8Benchmark.cryptoEncrpyt  avgt   10    6616.766 ±   61.604  us/op
+V8Benchmark.deltaBlue      avgt   10    7193.024 ±  518.319  us/op
+V8Benchmark.earley         avgt   10   24088.585 ± 3232.596  us/op
+V8Benchmark.rayTrace       avgt   10   67009.699 ± 9952.041  us/op
+V8Benchmark.richards       avgt   10    3387.196 ±  196.684  us/op
+V8Benchmark.splay          avgt   10    3214.464 ±  387.844  us/op
+
+*** New experiment: INDY for pre-optimized integer math.
+V8Benchmark.boyer          avgt   25  87763.414 ± 746.003  us/op
+V8Benchmark.cryptoDecrypt  avgt   25  97383.784 ± 347.786  us/op
+V8Benchmark.cryptoEncrpyt  avgt   25   5425.258 ±  20.636  us/op
+V8Benchmark.deltaBlue      avgt   25   6135.249 ±  71.133  us/op
+V8Benchmark.earley         avgt   25  18035.512 ±  80.691  us/op
+V8Benchmark.rayTrace       avgt   25  52865.251 ± 598.587  us/op
+V8Benchmark.richards       avgt   25   2783.451 ±  19.907  us/op
+V8Benchmark.splay          avgt   25   2332.226 ± 113.653  us/op
+
+*** Same as above on Java 11
+** Baseline
+V8Benchmark.boyer          avgt   10  115667.651 ± 11313.880  us/op
+V8Benchmark.cryptoDecrypt  avgt   10  172509.104 ± 24836.956  us/op
+V8Benchmark.cryptoEncrpyt  avgt   10    8923.985 ±   553.710  us/op
+V8Benchmark.deltaBlue      avgt   10    7689.071 ±  1108.509  us/op
+V8Benchmark.earley         avgt   10   27414.257 ±  3593.497  us/op
+V8Benchmark.rayTrace       avgt   10   63966.281 ±  5575.434  us/op
+V8Benchmark.richards       avgt   10    3812.238 ±   439.279  us/op
+V8Benchmark.splay          avgt   10    3176.650 ±   435.559  us/op
+
+** With INDY math
+V8Benchmark.boyer          avgt   10  102441.730 ± 14601.262  us/op
+V8Benchmark.cryptoDecrypt  avgt   10  145647.109 ±  2158.990  us/op
+V8Benchmark.cryptoEncrpyt  avgt   10    7614.985 ±   252.224  us/op
+V8Benchmark.deltaBlue      avgt   10    6785.368 ±   132.974  us/op
+V8Benchmark.earley         avgt   10   23233.502 ±  1035.301  us/op
+V8Benchmark.rayTrace       avgt   10   56946.464 ±  3873.972  us/op
+V8Benchmark.richards       avgt   10    3135.791 ±    50.127  us/op
+V8Benchmark.splay          avgt   10    2817.307 ±   103.843  us/op
+
+
+
+***
+** New test : Simplified bytecode
+V8Benchmark.boyer          avgt   10   72533.033 ± 2324.826  us/op
+V8Benchmark.cryptoDecrypt  avgt   10  114298.008 ±  817.257  us/op
+V8Benchmark.cryptoEncrpyt  avgt   10    7565.472 ±  409.407  us/op
+V8Benchmark.deltaBlue      avgt   10    5687.200 ±   49.614  us/op
+V8Benchmark.earley         avgt   10   19254.715 ±  274.845  us/op
+V8Benchmark.rayTrace       avgt   10   54990.227 ± 1171.857  us/op
+V8Benchmark.richards       avgt   10    2936.211 ±   27.574  us/op
+V8Benchmark.splay          avgt   10    2522.870 ±  178.564  us/op
+
+** Baseline for the above:
+V8Benchmark.boyer          avgt   10   75718.687 ± 766.737  us/op
+V8Benchmark.cryptoDecrypt  avgt   10  100156.243 ± 809.902  us/op
+V8Benchmark.cryptoEncrpyt  avgt   10    6401.275 ±  99.888  us/op
+V8Benchmark.deltaBlue      avgt   10    6138.241 ±  46.295  us/op
+V8Benchmark.earley         avgt   10   19235.372 ± 136.724  us/op
+V8Benchmark.rayTrace       avgt   10   52199.630 ± 441.580  us/op
+V8Benchmark.richards       avgt   10    2764.265 ±  20.569  us/op
+V8Benchmark.splay          avgt   10    2597.383 ± 260.031  us/op
+
+
+**** New experiment: Increment / decrement
+Baseline:
+MicroBenchmark.loopOpt0  avgt    5  40321.678 ± 3609.415  ns/op
+MicroBenchmark.loopOpt9  avgt    5  39429.624 ± 2467.049  ns/op
+
+Basic unrolling:
+MicroBenchmark.loopOpt0  avgt    5  39261.215 ± 2214.255  ns/op
+MicroBenchmark.loopOpt9  avgt    5  40159.512 ± 7432.627  ns/op
+
+Integer op:
+MicroBenchmark.loopOpt0  avgt    5  39365.195 ± 3453.525  ns/op
+MicroBenchmark.loopOpt9  avgt    5  42436.648 ± 1172.629  ns/op
+
+Change zero to an Integer:
+MicroBenchmark.loopOpt0  avgt    5  38179.661 ±  1225.446  ns/op
+MicroBenchmark.loopOpt9  avgt    5  41205.304 ± 15882.295  ns/op
+
+*** New new experiment: Simplify putProperty
+Don't check the hash table before inserting!
+
+MicroBenchmark.loopOpt0  avgt    5  36486.280 ± 4561.122  ns/op
+MicroBenchmark.loopOpt9  avgt    5  34447.626 ±  582.656  ns/op
+
+**** New work as of 4/16/21:
+
+Baseline, Java8:
+
+V8Benchmark.boyer          avgt   10  81182.417 ± 2317.272  us/op
+V8Benchmark.cryptoDecrypt  avgt   10  99995.844 ± 3246.894  us/op
+V8Benchmark.cryptoEncrpyt  avgt   10   5430.647 ±   97.066  us/op
+V8Benchmark.deltaBlue      avgt   10   6292.097 ±  292.398  us/op
+V8Benchmark.earley         avgt   10  19442.819 ±  906.634  us/op
+V8Benchmark.rayTrace       avgt   10  54715.825 ± 1439.635  us/op
+V8Benchmark.richards       avgt   10   2805.116 ±   79.564  us/op
+V8Benchmark.splay          avgt   10   2678.128 ±  346.216  us/op
+
+Changes to slot map:
+
+V8Benchmark.boyer          avgt   10   81532.750 ± 2287.286  us/op
+V8Benchmark.cryptoDecrypt  avgt   10  122988.314 ± 2494.498  us/op
+V8Benchmark.cryptoEncrpyt  avgt   10    5782.738 ±  407.073  us/op
+V8Benchmark.deltaBlue      avgt   10    6573.663 ±  158.941  us/op
+V8Benchmark.earley         avgt   10   19309.499 ±  556.138  us/op
+V8Benchmark.rayTrace       avgt   10   53285.099 ± 1632.960  us/op
+V8Benchmark.richards       avgt   10    2872.590 ±   62.319  us/op
+V8Benchmark.splay          avgt   10    2534.275 ±  146.017  us/op
+
+**** Work on SlotMap
+
+Java11 baseline:
+SlotMapBenchmark.embeddedInsert1Key          avgt    5  3.675 ± 0.148  ns/op
+SlotMapBenchmark.embeddedQueryKey100Entries  avgt    5  2.174 ± 0.391  ns/op
+SlotMapBenchmark.embeddedQueryKey10Entries   avgt    5  2.075 ± 0.034  ns/op
+SlotMapBenchmark.hashInsert1Key              avgt    5  4.629 ± 0.074  ns/op
+SlotMapBenchmark.hashQueryKey100Entries      avgt    5  2.837 ± 0.059  ns/op
+SlotMapBenchmark.hashQueryKey10Entries       avgt    5  2.327 ± 0.030  ns/op
+
+Java 8, but also using Objects.assign:
+SlotMapBenchmark.embeddedInsert1Key          avgt    5  2.725 ± 0.329  ns/op
+SlotMapBenchmark.embeddedQueryKey100Entries  avgt    5  1.591 ± 0.083  ns/op
+SlotMapBenchmark.embeddedQueryKey10Entries   avgt    5  1.595 ± 0.020  ns/op
+SlotMapBenchmark.hashInsert1Key              avgt    5  4.064 ± 0.299  ns/op
+SlotMapBenchmark.hashQueryKey100Entries      avgt    5  3.287 ± 0.086  ns/op
+SlotMapBenchmark.hashQueryKey10Entries       avgt    5  2.144 ± 0.164  ns/osh 
+**** Work on math
+
+Java 8, bigint branch:
+
+MathBenchmark.addFloats          avgt    5  55.379 ± 0.878  ns/op
+MathBenchmark.addInts            avgt    5  55.099 ± 1.424  ns/op
+MathBenchmark.addTwoFloats       avgt    5  31.406 ± 0.828  ns/op
+MathBenchmark.bitwiseAnd         avgt    5  29.269 ± 0.288  ns/op
+MathBenchmark.bitwiseLsh         avgt    5  29.024 ± 0.573  ns/op
+MathBenchmark.bitwiseOr          avgt    5  29.574 ± 0.443  ns/op
+MathBenchmark.bitwiseRsh         avgt    5  28.340 ± 0.678  ns/op
+MathBenchmark.bitwiseSignedRsh   avgt    5  30.531 ± 0.973  ns/op
+MathBenchmark.subtractFloats     avgt    5  23.056 ± 0.445  ns/op
+MathBenchmark.subtractInts       avgt    5  22.737 ± 0.351  ns/op
+MathBenchmark.subtractTwoFloats  avgt    5  27.589 ± 0.200  ns/op
+
+Java 8, baseline:
+
+MathBenchmark.addFloats          avgt    5  55.219 ± 8.203  ns/op
+MathBenchmark.addInts            avgt    5  56.501 ± 1.507  ns/op
+MathBenchmark.addTwoFloats       avgt    5  28.086 ± 0.730  ns/op
+MathBenchmark.bitwiseAnd         avgt    5  28.139 ± 0.621  ns/op
+MathBenchmark.bitwiseLsh         avgt    5  30.364 ± 1.124  ns/op
+MathBenchmark.bitwiseOr          avgt    5  28.150 ± 2.289  ns/op
+MathBenchmark.bitwiseRsh         avgt    5  29.782 ± 0.829  ns/op
+MathBenchmark.bitwiseSignedRsh   avgt    5  28.928 ± 0.658  ns/op
+MathBenchmark.subtractFloats     avgt    5  23.399 ± 0.761  ns/op
+MathBenchmark.subtractInts       avgt    5  23.174 ± 0.756  ns/op
+MathBenchmark.subtractTwoFloats  avgt    5  27.842 ± 1.417  ns/op
+
+**** More work on addition:
+
+Java 8, baseline:
+
+MathBenchmark.addFloats        avgt    5   55.372 ± 1.849  ns/op
+MathBenchmark.addInts          avgt    5   55.791 ± 1.206  ns/op
+MathBenchmark.addMixedStrings  avgt    5  272.825 ± 7.482  ns/op
+MathBenchmark.addStrings       avgt    5   14.859 ± 0.385  ns/op
+MathBenchmark.addTwoFloats     avgt    5   31.601 ± 0.437  ns/op
+
+Java 8, optimize OptRuntime.add:
+
+MathBenchmark.addFloats         avgt    5   23.101 ±  1.404  ns/op
+MathBenchmark.addInts           avgt    5   24.973 ±  2.573  ns/op
+MathBenchmark.addMixedStrings   avgt    5  277.455 ±  9.348  ns/op
+MathBenchmark.addStringsInLoop  avgt    5  892.967 ± 13.520  ns/op
+MathBenchmark.addTwoFloats      avgt    5   30.408 ±  0.676  ns/op
+
+Java 8, INDY for ScriptRuntime.add:
+
+MathBenchmark.addFloats         avgt    5   23.850 ±  5.680  ns/op
+MathBenchmark.addInts           avgt    5   22.944 ±  1.177  ns/op
+MathBenchmark.addMixedStrings   avgt    5  200.734 ±  2.074  ns/op
+MathBenchmark.addStringsInLoop  avgt    5  204.636 ± 13.023  ns/op
+MathBenchmark.addTwoFloats      avgt    5   29.243 ±  0.133  ns/op
+
+**** Same improvements above, but in branch with BigInt:
+
+V8Benchmark.boyer          avgt   10  87379.682 ± 1942.406  us/op
+V8Benchmark.cryptoDecrypt  avgt   10  90732.870 ± 1753.244  us/op
+V8Benchmark.cryptoEncrpyt  avgt   10   6686.339 ±  417.456  us/op
+V8Benchmark.deltaBlue      avgt   10   6728.399 ±  192.610  us/op
+V8Benchmark.earley         avgt   10  22728.312 ± 3992.633  us/op
+V8Benchmark.rayTrace       avgt   10  62362.173 ±  469.883  us/op
+V8Benchmark.richards       avgt   10   3286.260 ±  311.297  us/op
+V8Benchmark.splay          avgt   10   2621.950 ±  204.414  us/op
+
+**** 
+
+Object benchmark, before:
+ObjectBenchmark.accessFields   avgt    5     252.552 ±   54.117  ns/op
+ObjectBenchmark.createFields   avgt    5  146081.782 ± 2429.574  ns/op
+ObjectBenchmark.deleteFields   avgt    5     203.717 ±    3.247  ns/op
+ObjectBenchmark.iterateFields  avgt    5  251499.252 ± 6324.786  ns/op
+ObjectBenchmark.ownKeysFields  avgt    5  227905.422 ± 7453.049  ns/op
+
+After slot map refactoring:
+
+ObjectBenchmark.accessFields   avgt    5     220.538 ±    10.063  ns/op
+ObjectBenchmark.createFields   avgt    5  148050.610 ±  8295.863  ns/op
+ObjectBenchmark.deleteFields   avgt    5     208.212 ±    15.881  ns/op
+ObjectBenchmark.iterateFields  avgt    5  257993.523 ±  2440.282  ns/op
+ObjectBenchmark.ownKeysFields  avgt    5  231197.708 ± 11192.765  ns/op
