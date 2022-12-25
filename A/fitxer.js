@@ -1,52 +1,76 @@
-function make_coroutine(f){
-    let continuation;
-    function wrapper(resume, value) {
-      if (continuation) {
-        // si la continuació ja està definida, és que estem retornant d'una crida anterior
-        // llavors cridem la continuació amb el valor que ens han passat
-        continuation = continuation(value);
-      } else {
-        // si la continuació no està definida, és que estem invocant la corutina per primera vegada
-        // llavors definim la continuació amb el codi de la corutina
-        continuation = f(resume, value);
-      }
-    }
-    return wrapper;
-}
 
+/**
+ * AQUESTA FUNCIO SI QUE FUNCIONA PERO ENTRA EN UN BUCLE INFINIT QUE NO RETORNA RESUME
+ * function make_coroutine(fn) {
+    return function(continuation) {
+      function resume(c, v) {
+        return c(v, continuation);
+      }
+      return fn(resume, continuation);
+    }
+}**/
+
+/**function make_coroutine(fn) {
+    let continuation;
+  
+    function resume(coroutine, value) {
+      // capturem el punt de continuació de la corutina actual
+      continuation = Continuation.capture();
+      // cridem la corutina passada com a paràmetre
+      return coroutine(resume, value);
+    }
+  
+    return function(value) {
+      // iniciem la corutina passada com a paràmetre
+      return fn(resume, value);
+    };
+ }**/
+
+
+ //CREC QUE AQUESTA POT FUNCIONAR PERO NO DETECTA CONTINUATION()
+ function make_coroutine(fn) {
+    let continuation;
+  
+    return function(resume, value) {
+      if (continuation) {
+        // si ja s'ha creat la continuació, la resumim amb el valor indicat
+        continuation.resume(value);
+        return;
+      }
+  
+      // si no s'ha creat la continuació, la cream i la iniciem amb el valor indicat
+      continuation = new Continuation();
+      continuation.apply(this, [fn, resume, value]);
+    };
+  }
 
 function exemple_senzill() {
     let a = make_coroutine( function(resume, value) {
-        console.log("Ara estem a la corutina 'A'");
-        console.log("Venim de", resume(b,'A'));
-        console.log("Tornem a 'A'");
-        console.log("Venim de", resume(c,'A'));
+        print("Ara estem a la corutina 'A'");
+        print("Venim de", resume(b, 'A'));
+        print("Tornem a 'A'");
+        print("Venim de", resume(c, 'A'));
     });
 
     let b = make_coroutine( function(resume, value) {
-        console.log(" Ara estem a la corutina 'B'");
-        console.log(" Venim de", resume(c,'B'));
-        console.log(" Tornem a 'B'");
-        console.log(" Venim de", resume(a,'B'));
+        print(" Ara estem a la corutina 'B'");
+        print(" Venim de", resume(c, 'B'));
+        print(" Tornem a 'B'");
+        print(" Venim de", resume(a, 'B'));
     });
     
     let c = make_coroutine( function(resume, value) {
-        console.log(" Ara estem a la corutina 'C'");
-        console.log(" Venim de", resume(a,'C'));
-        console.log(" Tornem a 'C'");
-        console.log(" Venim de", resume(b,'C'));
+        print(" Ara estem a la corutina 'C'");
+        print(" Venim de", resume(a, 'C'));
+        print(" Tornem a 'C'");
+        print(" Venim de", resume(b, 'C'));
     });
 
     // amb aquest codi evitem "complicar-nos la vida" amb
     // problemes d'acabament quan cridem la corutina inicial
     if (typeof(a) === 'function') {
-        a('*') // el valor '*' que passem a 'a' és irrellevant
+        a('*') // el valor '*' que pasem a 'a' és irrellevant
     }
 }
 
-function Main(){
-    exemple_senzill();
-    console.log('prova');
-}
-
-Main();
+exemple_senzill();
